@@ -69,7 +69,12 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
       formData.append('email', email);
       formData.append('password', password);
 
-      const response = await fetch('http://localhost:8000/api/v1/auth/login', {
+      const baseUrl =
+        process.env.NEXT_PUBLIC_API_BASE_URL ||
+        process.env.API_BASE_URL ||
+        'http://localhost:8000/api/v1';
+
+      const response = await fetch(`${baseUrl}/auth/login`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -149,12 +154,17 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
       formData.append('email', email);
       formData.append('password', password);
 
-      const response = await fetch('http://localhost:8000/api/v1/auth/register', {
+      const baseUrl =
+        process.env.NEXT_PUBLIC_API_BASE_URL ||
+        process.env.API_BASE_URL ||
+        'http://localhost:8000/api/v1';
+
+      const response = await fetch(`${baseUrl}/auth/register`, {
         method: 'POST',
         headers: {
-          'Content-Type': 'application/json', 
+          'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ email, password }), 
+        body: JSON.stringify({ email, password }),
       });
 
       const data = await response.json();

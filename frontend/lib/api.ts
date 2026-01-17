@@ -195,13 +195,18 @@ class ApiClient {
 
     if (token) {
       try {
-        await fetch(`${this.baseUrl}/auth/logout`, {
+        const response = await fetch(`${this.baseUrl}/auth/logout`, {
           method: 'POST',
           headers: {
             'Authorization': `Bearer ${token}`,
             'Content-Type': 'application/json',
           },
         });
+
+        // Don't throw an error if logout fails, just log it
+        if (!response.ok) {
+          console.warn('Logout API call failed:', response.status, response.statusText);
+        }
       } catch (error) {
         console.error('Logout error:', error);
         // Continue with local cleanup even if server logout fails
