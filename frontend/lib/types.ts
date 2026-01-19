@@ -16,27 +16,27 @@ export const TaskSchema = z.object({
   title: z.string().min(1, 'Title is required').max(255),
   description: z.string().optional().nullable(),
   completed: z.boolean().default(false),
-  userId: z.string().uuid(),
-  createdAt: z.string().datetime(),
-  updatedAt: z.string().datetime(),
+  user_id: z.string().uuid(),  
+  created_at: z.string().datetime(),
+  updated_at: z.string().datetime(),  
 });
 
 export type Task = z.infer<typeof TaskSchema>;
 
 export const CreateTaskSchema = TaskSchema.omit({ 
   id: true, 
-  userId: true, 
-  createdAt: true, 
-  updatedAt: true 
+  user_id: true, 
+  created_at: true, 
+  updated_at: true 
 });
 
 export type CreateTask = z.infer<typeof CreateTaskSchema>;
 
 export const UpdateTaskSchema = TaskSchema.partial().omit({ 
   id: true, 
-  userId: true, 
-  createdAt: true, 
-  updatedAt: true 
+  user_id: true, 
+  created_at: true, 
+  updated_at: true 
 });
 
 export type UpdateTask = z.infer<typeof UpdateTaskSchema>;

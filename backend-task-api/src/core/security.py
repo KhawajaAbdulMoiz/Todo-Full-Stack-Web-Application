@@ -5,6 +5,7 @@ from fastapi.security import HTTPBearer
 from jose import JWTError, jwt
 from sqlmodel.ext.asyncio.session import AsyncSession
 from sqlmodel import select
+from passlib.context import CryptContext
 
 from core.config import settings
 from models.user import User
@@ -13,6 +14,18 @@ from core.database import get_async_session
 
 # Initialize JWT token scheme
 security = HTTPBearer()
+
+# Configure password hashing
+pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
+
+
+def verify_password(plain_password: str, hashed_password: str) -> bool:
+    return pwd_context.verify(plain_password, hashed_password)
+
+
+def get_password_hash(password: str) -> str:
+    # passlib handles encoding + bcrypt limits internally
+    return pwd_context.hash(password)
 
 
 def create_access_token(data: dict, expires_delta: Optional[timedelta] = None):

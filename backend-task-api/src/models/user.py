@@ -13,7 +13,7 @@ class User(UserBase, table=True):
 
     id: uuid.UUID = Field(default_factory=uuid.uuid4, primary_key=True, index=True)
     email: str = Field(unique=True, index=True)
-    password_hash: str = Field(sa_column_kwargs={"nullable": False})  # Add this field
+    password_hash: str = Field(sa_column_kwargs={"nullable": False})
     created_at: datetime = Field(default_factory=datetime.utcnow, index=True)
     updated_at: datetime = Field(default_factory=datetime.utcnow, index=True)
 
@@ -26,7 +26,7 @@ class UserRead(UserBase):
 
 class UserCreate(UserBase):
     email: str
-    password: str  # Add password field for creation
+    password: str
 
 
 class UserUpdate(SQLModel):

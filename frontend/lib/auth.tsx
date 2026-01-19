@@ -61,99 +61,53 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
   }, []);
 
   // -------------------- Login --------------------
-  const login = async (email: string, password: string) => {
-    setIsLoading(true);
-    try {
-      // Using FormData to match backend expectations
-      const formData = new FormData();
-      formData.append('email', email);
-      formData.append('password', password);
+const login = async (email: string, password: string) => {
+  setIsLoading(true);
 
-      const baseUrl =
-        process.env.NEXT_PUBLIC_API_BASE_URL ||
-        process.env.API_BASE_URL ||
-        'http://localhost:8000/api/v1';
+  try {
+    const baseUrl =
+      process.env.NEXT_PUBLIC_API_BASE_URL ??
+      'http://localhost:8000/api/v1';
 
-      const response = await fetch(`${baseUrl}/auth/login`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ email, password }),
-      });
+    const response = await fetch(`${baseUrl}/auth/login`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ email, password }),
+    });
 
-      const data = await response.json();
+    const data = await response.json();
 
-      if (!response.ok) {
-        let errorMessage = 'Login failed';
-
-        if (typeof data?.detail === 'string') {
-          errorMessage = data.detail;
-        } else if (Array.isArray(data?.detail)) {
-          errorMessage = data.detail.join(', ');
-        } else if (typeof data?.message === 'string') {
-          errorMessage = data.message;
-        } else {
-          errorMessage = JSON.stringify(data);
-        }
-
-        throw new Error(errorMessage);
-      }
-
-      // Extract token from response (backend returns {"token": "..."})
-      const token = data.data?.token || data.token || data.access_token || data.accessToken;
-      if (!token) {
-        throw new Error('No token received from server');
-      }
-
-      // Store the token in localStorage (same as apiClient does)
-      localStorage.setItem('auth_token', token);
-
-      // The backend doesn't return user data in login response,
-      // so we'll need to fetch user data separately or construct it from the token payload
-      // For now, we'll just store the email since that's what we have
-      const mockUser: User = {
-        id: 'unknown', // Will be updated later when we fetch user details
-        email,
-        createdAt: new Date().toISOString(),
-        updatedAt: new Date().toISOString(),
-      };
-
-      setUser(mockUser);
-      localStorage.setItem('logged_in_user', JSON.stringify(mockUser));
-    } catch (err: any) {
-      console.error('Login error:', err);
-
-      let message = 'Login failed';
-
-      if (typeof err === 'string') {
-        message = err;
-      } else if (err instanceof Error) {
-        message = err.message;
-      } else if (err?.detail) {
-        message = err.detail;
-      } else if (err?.message && typeof err.message === 'string') {
-        message = err.message;
-      } else {
-        message = JSON.stringify(err);
-      }
-
-      throw new Error(message);
+    if (!response.ok) {
+      throw new Error(data?.detail || data?.message || 'Login failed');
     }
-    finally {
-      setIsLoading(false);
+
+    // ✅ YOUR backend returns token here
+const token = data?.data?.token ?? data?.token;
+const user = data?.data?.user ?? data?.user;
+
+    if (!token || !user) {
+      throw new Error('Invalid login response from server');
     }
-  };
+
+    localStorage.setItem('auth_token', token);
+    localStorage.setItem('logged_in_user', JSON.stringify(user));
+
+    setUser(user);
+  } catch (err: any) {
+    console.error('Login error:', err);
+    throw new Error(err?.message || 'Login failed');
+  } finally {
+    setIsLoading(false);
+  }
+};
+
 
   // -------------------- Register --------------------
   const register = async (email: string, password: string) => {
     setIsLoading(true);
     try {
-      // Using FormData to match backend expectations
-      const formData = new FormData();
-      formData.append('email', email);
-      formData.append('password', password);
-
       const baseUrl =
         process.env.NEXT_PUBLIC_API_BASE_URL ||
         process.env.API_BASE_URL ||
@@ -170,38 +124,33 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
       const data = await response.json();
 
       if (!response.ok) {
-        throw new Error(data.detail || data.message || 'Registration failed');
+        throw new Error(data?.detail || data?.message || 'Registration failed');
       }
 
-      // Extract token from response (backend returns {"access_token": "...", "user": {...}})
-      const token = data.access_token || data.token || data.accessToken;
-      if (!token) {
-        throw new Error('No token received from server');
+      // Extract token from response following canonical contract: response.data.token
+      const token = data?.data?.token;
+      const user = data?.data?.user;
+
+      if (!token || !user) {
+        throw new Error('Invalid registration response from server');
       }
 
       // Store the token in localStorage (same as apiClient does)
       localStorage.setItem('auth_token', token);
 
-      // Extract user data from response
-      const userData = data.data?.user || data.user;
-
-      if (!userData) {
-        throw new Error('User data not returned from server');
-      }
-
       const normalizedUser: User = {
-        id: userData.id,
-        email: userData.email,
-        createdAt: userData.created_at || userData.createdAt,
-        updatedAt: userData.updated_at || userData.updatedAt,
+        id: user.id,
+        email: user.email,
+        createdAt: user.created_at || user.createdAt,
+        updatedAt: user.updated_at || user.updatedAt,
       };
 
       setUser(normalizedUser);
       localStorage.setItem('logged_in_user', JSON.stringify(normalizedUser));
     } catch (err: any) {
-      console.error('Login error:', err);
+      console.error('Registration error:', err);
 
-      let message = 'Login failed';
+      let message = 'Registration failed';
 
       if (typeof err === 'string') {
         message = err;
@@ -221,7 +170,7 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
     }
   };
 
-  // -------------------- Logout --------------------
+
   const logout = () => {
     setUser(null);
     localStorage.removeItem('logged_in_user');
@@ -244,7 +193,7 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
   );
 };
 
-// -------------------- Hook --------------------
+
 export const useAuth = () => {
   const context = useContext(AuthContext);
   if (!context) {

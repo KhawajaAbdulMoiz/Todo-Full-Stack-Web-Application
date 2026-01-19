@@ -1,4 +1,4 @@
-from fastapi import APIRouter, HTTPException, status, Form, Depends
+from fastapi import APIRouter, HTTPException, status, Depends
 from contextlib import asynccontextmanager
 from src.core.database import AsyncSessionLocal
 from src.services.auth_service import AuthService
@@ -7,17 +7,17 @@ from src.core.security import create_access_token, blacklist_token, verify_token
 from datetime import timedelta, datetime
 from typing import Dict, Any
 from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
-
+from src.models.auth import LoginRequest, RegisterRequest
 
 router = APIRouter()
 security = HTTPBearer()
 
 
 @router.post("/auth/register", response_model=Dict[str, Any], status_code=status.HTTP_201_CREATED)
-async def register(
-    email: str = Form(...),
-    password: str = Form(...)
-):
+async def register(payload: RegisterRequest):
+    email = payload.email
+    password = payload.password
+
     """
     Register a new user with email and password.
 
@@ -59,16 +59,12 @@ async def register(
         }
 
 
-
 @router.post("/auth/login")
-async def login(
-    email: str = Form(...),
-    password: str = Form(...)
-):
+async def login(payload: LoginRequest):
     async with AsyncSessionLocal() as session:
         auth_service = AuthService(session)
 
-        user = await auth_service.authenticate(email, password)
+        user = await auth_service.authenticate(payload.email, payload.password)
         if not user:
             raise HTTPException(
                 status_code=status.HTTP_401_UNAUTHORIZED,
@@ -87,7 +83,6 @@ async def login(
                 "email": user.email
             }
         }
-
 
 @router.post("/auth/logout")
 async def logout(credentials: HTTPAuthorizationCredentials = Depends(security)):

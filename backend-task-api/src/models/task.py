@@ -15,7 +15,7 @@ class Task(TaskBase, table=True):
     title: str
     description: Optional[str] = None
     completed: bool = False
-    user_id: uuid.UUID = Field(foreign_key="user.id")
+    user_id: uuid.UUID = Field(foreign_key="users.id")
     created_at: datetime = Field(default_factory=datetime.utcnow)
     updated_at: datetime = Field(default_factory=datetime.utcnow)
 

@@ -21,8 +21,22 @@ export default function TaskList({ userId }: TaskListProps) {
     const fetchTasks = async () => {
       try {
         setLoading(true);
-        const response = await apiClient.getTasks();
-        setTasks(response.tasks || []);
+        const tasksData = await apiClient.getTasks();
+
+        // Transform backend response to match frontend types
+        const formattedTasks = (Array.isArray(tasksData) ? tasksData : []).map(task => ({
+          id: String(task.id),
+          title: task.title,
+          description: task.description || '',
+          completed: task.completed || false,
+          user_id: task.user_id,
+          created_at: task.created_at,
+          updated_at: task.updated_at,
+        }));
+
+        console.log('Tasks loaded:', formattedTasks.length);
+        setTasks(formattedTasks);
+
       } catch (err: any) {
         setError(err.message || 'Failed to load tasks');
         console.error('Error fetching tasks:', err);
@@ -95,31 +109,28 @@ export default function TaskList({ userId }: TaskListProps) {
         <h2 className="text-2xl font-bold text-gray-900">Your Tasks</h2>
         <div className="flex space-x-2 bg-gray-100 p-1 rounded-lg">
           <button
-            className={`px-3 py-1 rounded-md text-sm font-medium ${
-              filter === 'all'
-                ? 'bg-white text-blue-600 shadow'
-                : 'text-gray-600 hover:text-gray-900'
-            }`}
+            className={`px-3 py-1 rounded-md text-sm font-medium ${filter === 'all'
+              ? 'bg-white text-blue-600 shadow'
+              : 'text-gray-600 hover:text-gray-900'
+              }`}
             onClick={() => setFilter('all')}
           >
             All
           </button>
           <button
-            className={`px-3 py-1 rounded-md text-sm font-medium ${
-              filter === 'active'
-                ? 'bg-white text-blue-600 shadow'
-                : 'text-gray-600 hover:text-gray-900'
-            }`}
+            className={`px-3 py-1 rounded-md text-sm font-medium ${filter === 'active'
+              ? 'bg-white text-blue-600 shadow'
+              : 'text-gray-600 hover:text-gray-900'
+              }`}
             onClick={() => setFilter('active')}
           >
             Active
           </button>
           <button
-            className={`px-3 py-1 rounded-md text-sm font-medium ${
-              filter === 'completed'
-                ? 'bg-white text-blue-600 shadow'
-                : 'text-gray-600 hover:text-gray-900'
-            }`}
+            className={`px-3 py-1 rounded-md text-sm font-medium ${filter === 'completed'
+              ? 'bg-white text-blue-600 shadow'
+              : 'text-gray-600 hover:text-gray-900'
+              }`}
             onClick={() => setFilter('completed')}
           >
             Completed

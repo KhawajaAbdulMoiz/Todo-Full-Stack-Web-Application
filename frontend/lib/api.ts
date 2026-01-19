@@ -89,14 +89,12 @@ class ApiClient {
   // ---------------- AUTH ----------------
 
   async register(userData: { email: string; password: string }) {
-    // Backend expects form data, not JSON
-    const formData = new FormData();
-    formData.append('email', userData.email);
-    formData.append('password', userData.password);
-
     const res = await fetch(`${this.baseUrl}/auth/register`, {
       method: 'POST',
-      body: formData,
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(userData),
     });
 
     if (!res.ok) {
@@ -127,8 +125,8 @@ class ApiClient {
 
     const data = await res.json();
 
-    // The backend returns the token as 'access_token'
-    const token = data.access_token || data.token || data.accessToken;
+    // Extract token following canonical contract: response.data.token
+    const token = data?.data?.token;
 
     if (!token) {
       throw new Error('No token received from server');
@@ -140,14 +138,12 @@ class ApiClient {
   }
 
   async login(credentials: { email: string; password: string }) {
-    // Backend expects form data, not JSON
-    const formData = new FormData();
-    formData.append('email', credentials.email);
-    formData.append('password', credentials.password);
-
     const res = await fetch(`${this.baseUrl}/auth/login`, {
       method: 'POST',
-      body: formData,
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(credentials),
     });
 
     if (!res.ok) {
@@ -178,8 +174,8 @@ class ApiClient {
 
     const data = await res.json();
 
-    // The backend returns the token as 'access_token'
-    const token = data.access_token || data.token || data.accessToken;
+    // Extract token following canonical contract: response.data.token
+    const token = data?.data?.token;
 
     if (!token) {
       throw new Error('No token received from server');
@@ -221,9 +217,10 @@ class ApiClient {
   
   // ---------------- TASKS ----------------
 
-  async getTasks() {
-    return this.request<{ tasks: any[]; pagination?: any }>('/tasks');
-  }
+async getTasks() {
+  
+  return this.request<any[]>('/tasks');
+}
 
   async createTask(taskData: {
     title: string;
