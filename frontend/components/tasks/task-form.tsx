@@ -13,7 +13,7 @@ interface TaskFormProps {
 
 export default function TaskForm({ onTaskCreate }: TaskFormProps) {
   const [title, setTitle] = useState('');
-  const [description, setDescription] = useState('');
+  const [description, setDescription] = useState<string>('');
   const [error, setError] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
 
@@ -25,14 +25,13 @@ export default function TaskForm({ onTaskCreate }: TaskFormProps) {
     try {
       const taskData: CreateTask = {
         title: title.trim(),
-        description: description.trim() || undefined,
+        description: description ? description.trim() : null,
         completed: false,
       };
 
       const response = await apiClient.createTask(taskData);
-      onTaskCreate(response.task);
-      
-      // Reset form
+      onTaskCreate(response);
+
       setTitle('');
       setDescription('');
     } catch (err: any) {
@@ -42,6 +41,7 @@ export default function TaskForm({ onTaskCreate }: TaskFormProps) {
       setIsLoading(false);
     }
   };
+
 
   return (
     <form onSubmit={handleSubmit} className="space-y-6">

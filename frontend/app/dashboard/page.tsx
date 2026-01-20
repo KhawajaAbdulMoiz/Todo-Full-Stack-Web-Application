@@ -63,8 +63,7 @@ export default function DashboardPage() {
               <span>Online</span>
             </div>
             <Button
-              onClick={logout}
-              variant="outline"
+              onClick={logout}          
               className="border-red-500 text-red-500 hover:bg-red-50 hover:text-red-600"
             >
               Logout

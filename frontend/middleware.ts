@@ -1,5 +1,4 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { jwtVerify } from 'jose';
 
 // Middleware to protect routes that require authentication
 export async function middleware(request: NextRequest) {
@@ -31,7 +30,7 @@ export async function middleware(request: NextRequest) {
   // If still no token, try to get it from localStorage by checking for a custom header
   // This is needed when the token is stored in localStorage and sent via a custom header
   if (!token) {
-    token = request.headers.get('x-auth-token') || request.headers.get('x-access-token');
+    token = request.headers.get('x-auth-token') || request.headers.get('x-access-token') || undefined;
   }
 
   if (!token) {
@@ -45,6 +44,7 @@ export async function middleware(request: NextRequest) {
       process.env.BETTER_AUTH_SECRET || 'fallback_secret_for_dev'
     );
 
+    const { jwtVerify } = await import('jose');
     const verified = await jwtVerify(token, secret);
 
     // Token is valid, allow access to the requested resource

@@ -10,7 +10,7 @@ class ApiClient {
   constructor() {
     this.baseUrl =
       process.env.NEXT_PUBLIC_API_BASE_URL ||
-      'http://localhost:8000/api/v1';
+      'https://aabbdduullmmooiizz-todo-app.hf.space/api/v1';
 
     this.headers = {
       'Content-Type': 'application/json',
@@ -226,9 +226,9 @@ class ApiClient {
 
   async createTask(taskData: {
     title: string;
-    description?: string;
+    description?: string | null;
     completed?: boolean;
-  }) {
+  }): Promise<Task> {
     const data = await this.request<any>('/tasks', {
       method: 'POST',
       body: JSON.stringify(taskData),
@@ -264,11 +264,27 @@ class ApiClient {
       description?: string;
       completed?: boolean;
     }
-  ) {
-    return this.request<{ task: any }>(`/tasks/${taskId}`, {
+  ): Promise<Task> {
+    const data = await this.request<any>(`/tasks/${taskId}`, {
       method: 'PUT',
       body: JSON.stringify(taskData),
     });
+
+    const task = data?.task ?? data?.data ?? data;
+
+    if (!task?.id) {
+      throw new Error('Invalid task response: missing id');
+    }
+
+    return {
+      id: String(task.id),
+      title: task.title,
+      description: task.description || null,
+      completed: task.completed ?? false,
+      user_id: task.user_id,
+      created_at: task.created_at,
+      updated_at: task.updated_at,
+    };
   }
 
   async deleteTask(taskId: string) {

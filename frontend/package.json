@@ -28,6 +28,6 @@
     "eslint": "^8",
     "eslint-config-next": "^14.2.15",
     "tailwindcss": "^4",
-    "typescript": "^4"
+    "typescript": "^5.9.3"
   }
 }

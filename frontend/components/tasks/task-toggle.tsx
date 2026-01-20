@@ -19,7 +19,7 @@ export default function TaskToggle({ task, onTaskUpdate }: TaskToggleProps) {
 
     try {
       const response = await apiClient.toggleTaskCompletion(task.id);
-      onTaskUpdate(response.task);
+      onTaskUpdate(response);
     } catch (err: any) {
       setError(err.message || 'Failed to update task status');
       console.error('Error toggling task:', err);

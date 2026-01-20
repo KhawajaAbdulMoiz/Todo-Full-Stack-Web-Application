@@ -1,6 +1,5 @@
 import './globals.css'
 import type { Metadata } from 'next'
-import { GeistSans, GeistMono } from 'geist/font'
 import { AuthProvider } from '@/lib/auth'
 
 export const metadata: Metadata = {
@@ -15,11 +14,9 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en">
-      <body
-        className={`${GeistSans.variable} ${GeistMono.variable} antialiased`}
-      >
-        <AuthProvider>{children}</AuthProvider>
-      </body>
+<body className="antialiased">
+  <AuthProvider>{children}</AuthProvider>
+</body>
     </html>
   )
 }
