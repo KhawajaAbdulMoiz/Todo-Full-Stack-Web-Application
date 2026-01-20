@@ -1,5 +1,7 @@
 'use client';
 
+import { Task } from "./types";
+
 // Base API client with JWT token attachment
 class ApiClient {
   private baseUrl: string;
@@ -63,11 +65,11 @@ class ApiClient {
         } else if (errorData && typeof errorData === 'object') {
           // Check for common error response properties
           errorMessage = errorData.detail ||
-                        errorData.message ||
-                        errorData.error ||
-                        (Array.isArray(errorData) ? errorData.join(', ') :
-                         errorData.errors ? Object.values(errorData.errors).flat().join(', ') :
-                         JSON.stringify(errorData));
+            errorData.message ||
+            errorData.error ||
+            (Array.isArray(errorData) ? errorData.join(', ') :
+              errorData.errors ? Object.values(errorData.errors).flat().join(', ') :
+                JSON.stringify(errorData));
         }
       } catch (parseError) {
         // If parsing fails, use status text or default message
@@ -109,11 +111,11 @@ class ApiClient {
         } else if (errorData && typeof errorData === 'object') {
           // Check for common error response properties
           errorMessage = errorData.detail ||
-                        errorData.message ||
-                        errorData.error ||
-                        (Array.isArray(errorData) ? errorData.join(', ') :
-                         errorData.errors ? Object.values(errorData.errors).flat().join(', ') :
-                         JSON.stringify(errorData));
+            errorData.message ||
+            errorData.error ||
+            (Array.isArray(errorData) ? errorData.join(', ') :
+              errorData.errors ? Object.values(errorData.errors).flat().join(', ') :
+                JSON.stringify(errorData));
         }
       } catch (parseError) {
         // If parsing fails, use status text or default message
@@ -158,11 +160,11 @@ class ApiClient {
         } else if (errorData && typeof errorData === 'object') {
           // Check for common error response properties
           errorMessage = errorData.detail ||
-                        errorData.message ||
-                        errorData.error ||
-                        (Array.isArray(errorData) ? errorData.join(', ') :
-                         errorData.errors ? Object.values(errorData.errors).flat().join(', ') :
-                         JSON.stringify(errorData));
+            errorData.message ||
+            errorData.error ||
+            (Array.isArray(errorData) ? errorData.join(', ') :
+              errorData.errors ? Object.values(errorData.errors).flat().join(', ') :
+                JSON.stringify(errorData));
         }
       } catch (parseError) {
         // If parsing fails, use status text or default message
@@ -214,24 +216,42 @@ class ApiClient {
     document.cookie = 'auth_token=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT; SameSite=Lax';
   }
 
-  
+
   // ---------------- TASKS ----------------
 
-async getTasks() {
-  
-  return this.request<any[]>('/tasks');
-}
+  async getTasks() {
+
+    return this.request<any[]>('/tasks');
+  }
 
   async createTask(taskData: {
     title: string;
     description?: string;
     completed?: boolean;
   }) {
-    return this.request<{ task: any }>('/tasks', {
+    const data = await this.request<any>('/tasks', {
       method: 'POST',
       body: JSON.stringify(taskData),
     });
+
+
+    const task = data?.task ?? data?.data ?? data;
+
+    if (!task?.id) {
+      throw new Error('Invalid task response: missing id');
+    }
+
+    return {
+      id: String(task.id),
+      title: task.title,
+      description: task.description || '',
+      completed: task.completed ?? false,
+      user_id: task.user_id,
+      created_at: task.created_at,
+      updated_at: task.updated_at,
+    };
   }
+
 
   async getTask(taskId: string) {
     return this.request<{ task: any }>(`/tasks/${taskId}`);
@@ -257,14 +277,13 @@ async getTasks() {
     });
   }
 
-  async toggleTaskCompletion(taskId: string) {
-    return this.request<{ task: any }>(
-      `/tasks/${taskId}/toggle-completion`,
-      {
-        method: 'PATCH',
-      }
-    );
-  }
+async toggleTaskCompletion(taskId: string) {
+  return this.request<Task>(
+    `/tasks/${taskId}/toggle`,
+    { method: 'PATCH' }
+  );
+}
+
 }
 
 export const apiClient = new ApiClient();

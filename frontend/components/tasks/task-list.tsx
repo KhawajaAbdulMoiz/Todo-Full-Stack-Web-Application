@@ -156,7 +156,7 @@ export default function TaskList({ userId }: TaskListProps) {
             </p>
           </div>
         ) : (
-          filteredTasks.map(task => (
+          filteredTasks.filter(t => t?.id).map(task => (
             <TaskItem
               key={task.id}
               task={task}
@@ -170,7 +170,7 @@ export default function TaskList({ userId }: TaskListProps) {
       {tasks.length > 0 && (
         <div className="bg-white/80 backdrop-blur-sm rounded-xl p-4 text-center text-gray-600 border border-white/30">
           You have <span className="font-semibold text-blue-600">{tasks.length}</span> total tasks,
-          <span className="font-semibold text-green-600"> {tasks.filter(t => t.completed).length}</span> completed
+          <span className="font-semibold text-green-600"> {tasks.filter(t => t?.completed === true).length} </span> completed
         </div>
       )}
     </div>

@@ -6,7 +6,7 @@ from jose import JWTError, jwt
 from sqlmodel.ext.asyncio.session import AsyncSession
 from sqlmodel import select
 from passlib.context import CryptContext
-
+import uuid
 from core.config import settings
 from models.user import User
 from core.database import get_async_session
@@ -74,7 +74,9 @@ async def get_current_user(
 
     try:
         # Fetch the user from the database
-        user_statement = select(User).where(User.id == user_id)
+      
+        user_uuid = uuid.UUID(user_id)
+        user_statement = select(User).where(User.id == user_uuid)
         result = await session.execute(user_statement)
         user = result.scalar_one_or_none()
 
