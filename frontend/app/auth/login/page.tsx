@@ -42,7 +42,7 @@ export default function LoginPage() {
           </div>
         )}
 
-        <LoginForm onLoginSuccess={handleLoginSuccess} />
+        <LoginForm />
 
         <div className="mt-6 text-center text-sm text-gray-600">
           Don't have an account?{' '}
